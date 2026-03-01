@@ -13,8 +13,4 @@ protocol IconSearchPresenterProtocol: AnyObject {
     func didSelectIcon(at index: Int)
 }
 
-struct IconViewModel {
-    let sizeText: String
-    let tagsText: String
-    let iconFullName: String
-}
+
