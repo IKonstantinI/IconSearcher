@@ -8,7 +8,7 @@ final class IconifyService {
         self.networkManager = networkManager
     }
     
-    func searchIcons(query: String, completion: @escaping (Result<[Icon], Error>) -> Void) {
+    func searchIcons(query: String, limit: Int, pageSize: Int, completion: @escaping (Result<[Icon], Error>) -> Void) {
         
         var components = URLComponents(string: "https://api.iconify.design/search")
         components?.queryItems = [URLQueryItem(name: "query", value: query)]

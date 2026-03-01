@@ -1,5 +1,8 @@
-import Foundation
-
 protocol IconServiceProtocol {
-    func searchIcons(query: String, completion: @escaping (Result<[Icon], Error>) -> Void)
+    func searchIcons(
+        query: String,
+        limit: Int,
+        start: Int,
+        completion: @escaping (Result<([Icon], total: Int), Error>) -> Void
+    )
 }
