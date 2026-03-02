@@ -21,19 +21,16 @@ final class IconSearchPresenter: IconSearchPresenterProtocol {
     }
     
     func searchButtonTapped(query: String?) {
-        guard let query = query, !query.isEmpty else {
-            return
-        }
+        guard let query = query, !query.isEmpty else { return }
         
         view?.showLoading()
         
         currentPage = 0
         totalIcons = 0
         icons = []
-        
         currentQuery = query
-        fetchIcons(query: currentQuery)
-        self.totalIcons =
+        
+        loadMoreIcons()
     }
     
     func didSelectIcon(at index: Int) {
@@ -42,28 +39,35 @@ final class IconSearchPresenter: IconSearchPresenterProtocol {
         print("Presenter: User selected icon \(selectedIcon.fullName)")
     }
     
-    private func fetchIcons(query: String) {
+    func loadMoreIcons() {
         guard !isLoading else { return }
+        
+        if currentPage > 0, icons.count >= totalIcons { return }
+        
         isLoading = true
+        
+        if currentPage == 0 {
+            view?.showLoading()
+        }
+        
         let start = currentPage * pageSize
-        iconService.searchIcons(query: query) { [weak self] result in
+        
+        iconService.searchIcons(query: currentQuery, limit: pageSize, start: start) { [weak self] result in
             guard let self = self else { return }
             
             self.view?.hideLoading()
+            self.isLoading = false
             
             switch result {
-            case .success(let icons):
-                let viewModels = self.mapIconsToViewModels(icons: icons)
-                if currentPage > 0 {
-                    self.icons.append(contentsOf: icons)
-                    
-                } else {
-                    self.view?.showIcons(viewModels: viewModels)
+            case .success(let (newIcons, total)):
+                if self.currentPage == 0 {
+                    self.totalIcons = total
                 }
             case .failure(let error):
-                view?.showError(title: "Error", message: error.localizedDescription)
+                if self.currentPage == 0 {
+                    self.view?.showError(title: "Error", message: error.localizedDescription)
+                }
             }
-            self.isLoading = false
         }
     }
     
