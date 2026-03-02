@@ -63,6 +63,11 @@ final class IconSearchPresenter: IconSearchPresenterProtocol {
                 if self.currentPage == 0 {
                     self.totalIcons = total
                 }
+                self.icons.append(contentsOf: newIcons)
+                self.currentPage += 1
+                
+                let viewModels = self.mapIconsToViewModels(icons: self.icons)
+                self.view?.showIcons(viewModels: viewModels)
             case .failure(let error):
                 if self.currentPage == 0 {
                     self.view?.showError(title: "Error", message: error.localizedDescription)
