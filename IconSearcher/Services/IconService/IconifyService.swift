@@ -1,6 +1,6 @@
 import Foundation
 
-final class IconifyService {
+final class IconifyService: IconServiceProtocol {
     
     private let networkManager: NetworkManagerProtocol
     
@@ -8,8 +8,7 @@ final class IconifyService {
         self.networkManager = networkManager
     }
     
-    func searchIcons(query: String, limit: Int, pageSize: Int, completion: @escaping (Result<[Icon], Error>) -> Void) {
-        
+    func searchIcons(query: String, limit: Int, start: Int, completion: @escaping (Result<([Icon], total: Int), any Error>) -> Void) {
         var components = URLComponents(string: "https://api.iconify.design/search")
         components?.queryItems = [URLQueryItem(name: "query", value: query)]
         
@@ -24,18 +23,17 @@ final class IconifyService {
             switch result {
             case .failure(let error):
                 completion(.failure(error))
-            case .success(let searchResult):
-                if searchResult.icons.isEmpty {
-                    completion(.success([]))
+            case .success(let result):
+                if result.icons.isEmpty {
+                    completion(.success(([], 0)))
                     return
                 }
-                
-                self.fetchDetails(or: searchResult.icons, completion: completion)
+                self.fetchDetails(or: result.icons, total: result.total, completion: completion)
             }
         }
     }
     
-    private func fetchDetails(or iconNames: [String], completion: @escaping (Result<[Icon], Error>) -> Void) {
+    private func fetchDetails(or iconNames: [String], total: Int, completion: @escaping (Result<([Icon], total: Int), Error>) -> Void) {
         
         var iconsMap: [String: Icon] = [:]
         iconNames.forEach { iconsMap[$0] = Icon(fullName: $0) }
@@ -79,7 +77,7 @@ final class IconifyService {
                 completion(.failure(error))
             } else {
                 let finalIcons = iconNames.compactMap { iconsMap[$0] }
-                completion(.success(finalIcons))
+                completion(.success((finalIcons, total)))
             }
         }
     }

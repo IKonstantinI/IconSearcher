@@ -1,8 +1,12 @@
 import Foundation
 
-final class Cache<Key: Hashable, Value: AnyClass> {
+final class Cache<Key: Hashable, Value: AnyObject> {
     
-    private let cache = NSCache<NSObject, AnyObject>()
+    private let cache = NSCache<NSString, AnyObject>()
+    
+    private func makeKey(_ key: Key) -> NSString {
+        "\(key.hashValue)" as NSString
+    }
     
     var countLimit: Int {
         get { cache.countLimit }
@@ -15,9 +19,10 @@ final class Cache<Key: Hashable, Value: AnyClass> {
     }
     
     func value(forKey key: Key) -> Value? {
-        return cache.object(forKey: key as NSObject) as? Value
+        return cache.object(forKey: makeKey(key)) as? Value
     }
     
-    
-    
+    func setValue(_ value: Value, forKey key: Key) {
+        cache.setObject(value, forKey: makeKey(key))
+    }
 }
