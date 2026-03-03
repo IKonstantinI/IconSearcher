@@ -80,7 +80,7 @@ final class IconSearchPresenter: IconSearchPresenterProtocol {
         return icons.map { icon in
             let sizeText = "\(icon.width)x\(icon.height)"
             let tagsText = "Tags: " + icon.tags.prefix(10).joined(separator: ",")
-            let iconURL = URL(string: "https://api.iconify.design/\(icon.fullName).svg")
+            let iconURL = URL(string: "https://api.iconify.design/\(icon.fullName).png?height=48")
             return IconViewModel(sizeText: sizeText, tagsText: tagsText, iconImageURL: iconURL)
         }
     }

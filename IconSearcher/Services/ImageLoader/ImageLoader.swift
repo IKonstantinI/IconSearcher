@@ -10,6 +10,7 @@ final class ImageLoader: ImageLoaderProtocol {
     private var currentTask: URLSessionDataTask?
     
     func loadImage(from url: URL, completion: @escaping (UIImage?) -> Void) {
+        
         if let cachedImage = cache.value(forKey: url) {
             completion(cachedImage)
             return

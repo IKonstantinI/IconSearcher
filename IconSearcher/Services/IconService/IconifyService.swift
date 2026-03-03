@@ -10,7 +10,11 @@ final class IconifyService: IconServiceProtocol {
     
     func searchIcons(query: String, limit: Int, start: Int, completion: @escaping (Result<([Icon], total: Int), any Error>) -> Void) {
         var components = URLComponents(string: "https://api.iconify.design/search")
-        components?.queryItems = [URLQueryItem(name: "query", value: query)]
+        components?.queryItems = [
+            URLQueryItem(name: "query", value: query),
+            URLQueryItem(name: "limit", value: String(limit)),
+            URLQueryItem(name: "start", value: String(start))
+        ]
         
         guard let url = components?.url else {
             completion(.failure(URLError(.badURL)))
@@ -49,7 +53,7 @@ final class IconifyService: IconServiceProtocol {
             let iconNamesOnly = names.map { Icon(fullName: $0).iconName }
             
             var components = URLComponents(string: "https://api.iconify.design/\(prefix).json")
-            components?.queryItems = [URLQueryItem(name: "icons", value: iconNamesOnly.joined(separator: ":"))]
+            components?.queryItems = [URLQueryItem(name: "icons", value: iconNamesOnly.joined(separator: ","))]
             
             guard let url = components?.url else { continue }
             
@@ -59,8 +63,8 @@ final class IconifyService: IconServiceProtocol {
                 case .success(let detailResponse):
                     for (iconName, metaData) in detailResponse.icons {
                         let fullName = "\(prefix):\(iconName)"
-                        iconsMap[fullName]?.width = detailResponse.width
-                        iconsMap[fullName]?.height = detailResponse.height
+                        iconsMap[fullName]?.width = detailResponse.width > 0 ? detailResponse.width : 24
+                        iconsMap[fullName]?.height = detailResponse.height > 0 ? detailResponse.height : 24
                         iconsMap[fullName]?.tags = metaData.tags ?? []
                     }
                 case .failure(let error):
