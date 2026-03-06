@@ -114,3 +114,16 @@ extension IconSearchViewController: UISearchBarDelegate {
         view.endEditing(true)
     }
 }
+
+extension IconSearchViewController {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        presenter?.didSelectIcon(at: indexPath.row)
+        tableView.deselectRow(at: indexPath, animated: true)
+    }
+    
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        if indexPath.row == icons.count - 5 {
+            presenter?.scrolledToButtom()
+        }
+    }
+}

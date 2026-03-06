@@ -1,6 +1,6 @@
 import Foundation
 
-final class IconifyService: IconServiceProtocol {
+final class FreepikService: IconServiceProtocol {
     
     private let networkManager: NetworkManagerProtocol
     

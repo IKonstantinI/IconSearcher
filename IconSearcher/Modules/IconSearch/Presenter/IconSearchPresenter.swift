@@ -7,7 +7,7 @@ final class IconSearchPresenter: IconSearchPresenterProtocol {
     private var icons: [Icon] = []
     private var currentPage = 0
     private var totalIcons = 0
-    private let pageSize = 30
+    private let pageSize = 32
     private var isLoading = false
     private var currentQuery = ""
     
@@ -37,6 +37,10 @@ final class IconSearchPresenter: IconSearchPresenterProtocol {
         guard icons.indices.contains(index) else { return }
         let selectedIcon = icons[index]
         print("Presenter: User selected icon \(selectedIcon.fullName)")
+    }
+    
+    func scrolledToButtom() {
+        loadMoreIcons()
     }
     
     func loadMoreIcons() {
