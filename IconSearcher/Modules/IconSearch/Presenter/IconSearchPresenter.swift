@@ -36,7 +36,7 @@ final class IconSearchPresenter: IconSearchPresenterProtocol {
     func didSelectIcon(at index: Int) {
         guard icons.indices.contains(index) else { return }
         let selectedIcon = icons[index]
-        print("Presenter: User selected icon \(selectedIcon.fullName)")
+        print("Presenter: User selected icon \(selectedIcon.name)")
     }
     
     func scrolledToButtom() {
@@ -84,8 +84,12 @@ final class IconSearchPresenter: IconSearchPresenterProtocol {
         return icons.map { icon in
             let sizeText = "\(icon.width)x\(icon.height)"
             let tagsText = "Tags: " + icon.tags.prefix(10).joined(separator: ",")
-            let iconURL = URL(string: "https://api.iconify.design/\(icon.fullName).png?height=48")
-            return IconViewModel(sizeText: sizeText, tagsText: tagsText, iconImageURL: iconURL)
+            
+            return IconViewModel(
+                sizeText: sizeText,
+                tagsText: tagsText,
+                iconImageURL: icon.url
+            )
         }
     }
 }

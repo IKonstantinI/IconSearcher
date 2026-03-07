@@ -3,5 +3,7 @@ import Foundation
 struct Icon {
     let name: String
     let tags: [String]
-    let pngURL: URL
+    let url: URL
+    let width: Int
+    let height: Int
 }
