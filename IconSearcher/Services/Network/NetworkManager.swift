@@ -36,4 +36,27 @@ final class NetworkManager: NetworkManagerProtocol {
         }
         task.resume()
     }
+    
+    func request<T: Decodable>(with request: URLRequest, completion: @escaping (Result<T, Error>) -> Void) {
+        let task = session.dataTask(with: request) { data, response, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
+                guard let data else {
+                    completion(.failure(URLError(.cannotParseResponse)))
+                    return
+                }
+                
+                do {
+                    let decodedObject = try JSONDecoder().decode(T.self, from: data)
+                    completion(.success(decodedObject))
+                } catch {
+                    completion(.failure(error))
+                }
+            }
+        }
+        task.resume()
+    }
 }
