@@ -2,7 +2,7 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>FreepikAPIKey</key>
+	<key>FreepikApiKey</key>
 	<string>FPSX2c86b7ec44c66eeadd64cbff3790d4bc</string>
 </dict>
 </plist>

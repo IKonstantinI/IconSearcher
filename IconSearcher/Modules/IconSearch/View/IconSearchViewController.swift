@@ -122,7 +122,7 @@ extension IconSearchViewController {
     }
     
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        if indexPath.row == icons.count - 5 {
+        if indexPath.row == icons.count - 9 {
             presenter?.scrolledToButtom()
         }
     }
