@@ -4,7 +4,7 @@ protocol IconSearchViewProtocol: AnyObject {
     func showIcons(viewModels: [IconViewModel])
     func showLoading()
     func hideLoading()
-    func showError(title: String, message: String)
+    func showAlert(title: String, message: String)
 }
 
 protocol IconSearchPresenterProtocol: AnyObject {

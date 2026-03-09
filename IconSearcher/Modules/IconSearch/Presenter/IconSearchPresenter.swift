@@ -3,6 +3,7 @@ import Foundation
 final class IconSearchPresenter: IconSearchPresenterProtocol {
     
     private weak var view: IconSearchViewProtocol?
+    private let imageSaver = ImageSaver()
     private let iconService: IconServiceProtocol
     private var icons: [Icon] = []
     private var currentPage = 0
@@ -36,7 +37,19 @@ final class IconSearchPresenter: IconSearchPresenterProtocol {
     func didSelectIcon(at index: Int) {
         guard icons.indices.contains(index) else { return }
         let selectedIcon = icons[index]
-        print("Presenter: User selected icon \(selectedIcon.name)")
+        
+        view?.showLoading()
+        
+        imageSaver.saveImage(from: selectedIcon.url) { [weak self] result in
+            self?.view?.hideLoading()
+            
+            switch result {
+            case .success:
+                self?.view?.showAlert(title: "Ok", message: "Иконка была сохранена в галерею.")
+            case .failure(let error):
+                self?.view?.showAlert(title: "Error", message: error.localizedDescription)
+            }
+        }
     }
     
     func scrolledToButtom() {
@@ -74,7 +87,7 @@ final class IconSearchPresenter: IconSearchPresenterProtocol {
                 self.view?.showIcons(viewModels: viewModels)
             case .failure(let error):
                 if self.currentPage == 0 {
-                    self.view?.showError(title: "Error", message: error.localizedDescription)
+                    self.view?.showAlert(title: "Error", message: error.localizedDescription)
                 }
             }
         }

@@ -1,6 +1,6 @@
 import Foundation
 
-struct Icon {
+struct Icon: Codable {
     let name: String
     let tags: [String]
     let url: URL
