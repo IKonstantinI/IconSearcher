@@ -2,30 +2,34 @@ import UIKit
 
 protocol IconCellPresenterProtocol {
     func loadImage(from url: URL?, to imageView: UIImageView)
-    func cancelLoad()
 }
 
 final class IconCellPresenter: IconCellPresenterProtocol {
     
-    private let imageLoader: ImageLoaderProtocol
-    
-    init(imageLoader: ImageLoaderProtocol = ImageLoader()) {
-        self.imageLoader = imageLoader
-    }
+    private let imageLoader: ImageLoaderProtocol = ImageLoader.shared
+    private var currentImageURL: URL?
     
     func loadImage(from url: URL?, to imageView: UIImageView) {
-        guard let url = url else {
-            imageView.image = nil
-            return
-        }
+        self.currentImageURL = url
         
-        imageLoader.loadImage(from: url) { [weak self] image in
-            guard self != nil else { return }
+        imageView.image = nil
+        
+        guard let url = url else { return }
+        
+        imageLoader.loadImage(from: url) { [weak self, weak imageView] image in
+            
+            guard let self = self, let imageView = imageView else { return }
+            
+            guard self.currentImageURL == url else { return }
+            
             imageView.image = image
         }
     }
     
-    func cancelLoad() {
-        imageLoader.cancelLoad()
+    func cancleOngoingLoad() {
+        if let url = currentImageURL {
+            imageLoader.cancelLoad(for: url)
+        }
+        currentImageURL = nil
     }
 }

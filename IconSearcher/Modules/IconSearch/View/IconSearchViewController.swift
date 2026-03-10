@@ -24,6 +24,9 @@ final class IconSearchViewController: UIViewController, UITableViewDelegate {
         setupUI()
         setupTableView()
         presenter?.viewDidLoad()
+        tableView.prefetchDataSource = self
+        tableView.rowHeight = UITableView.automaticDimension
+        tableView.estimatedRowHeight = 100
     }
     
     private func setupUI() {
@@ -64,7 +67,27 @@ final class IconSearchViewController: UIViewController, UITableViewDelegate {
     }
 }
 
-extension IconSearchViewController: UITableViewDataSource {
+extension IconSearchViewController: UITableViewDataSource, UITableViewDataSourcePrefetching {
+    func tableView(_ tableView: UITableView, prefetchRowsAt indexPaths: [IndexPath]) {
+        let urls = indexPaths.compactMap { presenter?.viewModel(at: $0.row)?.iconImageURL }
+        
+        print("Предзагрузка для \(urls.count) картинок.")
+        
+        urls.forEach { url in
+            ImageLoader.shared.loadImage(from: url) { _ in
+                 
+            }
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, cancelPrefetchingForRowsAt indexPaths: [IndexPath]) {
+        let urls = indexPaths.compactMap { presenter?.viewModel(at: $0.row)?.iconImageURL }
+        print("Отмена предзагрузки для \(urls.count) картинок.")
+        urls.forEach { url in
+            ImageLoader.shared.cancelLoad(for: url)
+        }
+    }
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return icons.count
     }

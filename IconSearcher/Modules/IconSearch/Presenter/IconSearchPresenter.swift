@@ -4,7 +4,7 @@ final class IconSearchPresenter: IconSearchPresenterProtocol {
     
     private weak var view: IconSearchViewProtocol?
     private let imageSaver = ImageSaver()
-    private let iconService: IconServiceProtocol
+    private let iconRepository: IconRepositoryProtocol
     private var icons: [Icon] = []
     private var currentPage = 0
     private var totalIcons = 0
@@ -12,9 +12,9 @@ final class IconSearchPresenter: IconSearchPresenterProtocol {
     private var isLoading = false
     private var currentQuery = ""
     
-    init(view: IconSearchViewProtocol, iconService: IconServiceProtocol) {
+    init(view: IconSearchViewProtocol, iconRepository: IconRepositoryProtocol) {
         self.view = view
-        self.iconService = iconService
+        self.iconRepository = iconRepository
     }
     
     func viewDidLoad() {
@@ -69,7 +69,7 @@ final class IconSearchPresenter: IconSearchPresenterProtocol {
         
         let start = currentPage * pageSize
         
-        iconService.searchIcons(query: currentQuery, limit: pageSize, start: start) { [weak self] result in
+        iconRepository.searchIcons(query: currentQuery, limit: pageSize, start: start) { [weak self] result in
             guard let self = self else { return }
             
             self.view?.hideLoading()
@@ -93,14 +93,20 @@ final class IconSearchPresenter: IconSearchPresenterProtocol {
         }
     }
     
+    func viewModel(at index: Int) -> IconViewModel? {
+        guard icons.indices.contains(index) else { return nil }
+        let icon = icons[index]
+        return mapIconsToViewModels(icons: [icon]).first
+    }
+    
     private func mapIconsToViewModels(icons: [Icon]) -> [IconViewModel] {
         return icons.map { icon in
             let sizeText = "\(icon.width)x\(icon.height)"
-            let tagsText = "Tags: " + icon.tags.prefix(10).joined(separator: ",")
+            let topTenTags = Array(icon.tags.prefix(10))
             
             return IconViewModel(
                 sizeText: sizeText,
-                tagsText: tagsText,
+                tags: topTenTags,
                 iconImageURL: icon.url
             )
         }

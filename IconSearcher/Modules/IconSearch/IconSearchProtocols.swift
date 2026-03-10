@@ -12,6 +12,7 @@ protocol IconSearchPresenterProtocol: AnyObject {
     func searchButtonTapped(query: String?)
     func didSelectIcon(at index: Int)
     func scrolledToButtom()
+    func viewModel(at index: Int) -> IconViewModel?
 }
 
 
