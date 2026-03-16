@@ -88,7 +88,6 @@ final class IconTableViewCell: UITableViewCell {
         iconImageView.image = nil
         sizeLabel.text = nil
         tagsLabel.text = nil
-        iconImageView.image = nil
         
         if let iconURL = self.iconURL {
             ImageLoader.shared.cancelLoad(for: iconURL)
