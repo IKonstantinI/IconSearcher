@@ -2,13 +2,19 @@ import UIKit
 
 final class IconSearchViewController: UIViewController, UITableViewDelegate {
     
+    // MARK: - UI Elements
+    
     private let searchBar = UISearchBar()
     private let tableView = UITableView()
     private let activityIndicator = UIActivityIndicatorView(style: .large)
     
+    // MARK: - Properties
+    
     private var icons: [IconViewModel] = []
     
     var presenter: IconSearchPresenterProtocol?
+    
+    // MARK: - Initialization
     
     init(presenter: IconSearchPresenterProtocol?) {
         self.presenter = presenter
@@ -19,28 +25,35 @@ final class IconSearchViewController: UIViewController, UITableViewDelegate {
         fatalError("init(coder:) has not been implemented")
     }
     
+    
+    // MARK: - Lifecycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        setupTableView()
-        presenter?.viewDidLoad()
-        tableView.prefetchDataSource = self
-        tableView.rowHeight = UITableView.automaticDimension
-        tableView.estimatedRowHeight = 100
     }
+    
+    // MARK: - UI Setup
     
     private func setupUI() {
         view.backgroundColor = .white
         title = "Icon Searcher"
         
-        view.addSubview(activityIndicator)
-        activityIndicator.translatesAutoresizingMaskIntoConstraints = false
-        
-        view.addSubview(searchBar)
         searchBar.translatesAutoresizingMaskIntoConstraints = false
+        searchBar.delegate = self
+        view.addSubview(searchBar)
         
-        view.addSubview(tableView)
         tableView.translatesAutoresizingMaskIntoConstraints = false
+        tableView.delegate = self
+        tableView.dataSource = self
+        tableView.prefetchDataSource = self
+        tableView.rowHeight = UITableView.automaticDimension
+        tableView.estimatedRowHeight = 100
+        tableView.register(IconTableViewCell.self, forCellReuseIdentifier: "IconCell")
+        view.addSubview(tableView)
+        
+        activityIndicator.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(activityIndicator)
         
         NSLayoutConstraint.activate([
             activityIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
@@ -56,37 +69,11 @@ final class IconSearchViewController: UIViewController, UITableViewDelegate {
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
     }
-    
-    private func setupTableView() {
-        tableView.delegate = self
-        tableView.dataSource = self
-        searchBar.delegate = self
-        
-        tableView.register(IconTableViewCell.self, forCellReuseIdentifier: "IconCell")
-        tableView.rowHeight = 60
-    }
 }
 
-extension IconSearchViewController: UITableViewDataSource, UITableViewDataSourcePrefetching {
-    func tableView(_ tableView: UITableView, prefetchRowsAt indexPaths: [IndexPath]) {
-        let urls = indexPaths.compactMap { presenter?.viewModel(at: $0.row)?.iconImageURL }
-        
-        print("Предзагрузка для \(urls.count) картинок.")
-        
-        urls.forEach { url in
-            ImageLoader.shared.loadImage(from: url) { _ in
-                 
-            }
-        }
-    }
-    
-    func tableView(_ tableView: UITableView, cancelPrefetchingForRowsAt indexPaths: [IndexPath]) {
-        let urls = indexPaths.compactMap { presenter?.viewModel(at: $0.row)?.iconImageURL }
-        print("Отмена предзагрузки для \(urls.count) картинок.")
-        urls.forEach { url in
-            ImageLoader.shared.cancelLoad(for: url)
-        }
-    }
+// MARK: - UITableViewDataSource
+
+extension IconSearchViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return icons.count
@@ -98,15 +85,45 @@ extension IconSearchViewController: UITableViewDataSource, UITableViewDataSource
         }
         
         let icon = icons[indexPath.row]
-        
-        let cellPresenter = IconCellPresenter()
-        cell.configure(with: icon, presenter: cellPresenter)
-        
+        cell.configure(with: icon)
         return cell
     }
 }
 
+// MARK: - UITableViewDataSourcePrefetching
+
+extension IconSearchViewController: UITableViewDataSourcePrefetching {
+    
+    func tableView(_ tableView: UITableView, prefetchRowsAt indexPaths: [IndexPath]) {
+        let urls = indexPaths.compactMap { icons[$0.row].iconImageURL }
+        urls.forEach { ImageLoader.shared.loadImage(from: $0) { _ in } }
+    }
+    
+    func tableView(_ tableView: UITableView, cancelPrefetchingForRowsAt indexPaths: [IndexPath]) {
+        let urls = indexPaths.compactMap { icons[$0.row].iconImageURL }
+        urls.forEach { ImageLoader.shared.cancelLoad(for: $0)}
+    }
+}
+
+// MARK: - UITableViewDelegate
+
+extension IconSearchViewController {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        presenter?.didSelectIcon(at: indexPath.row)
+        tableView.deselectRow(at: indexPath, animated: true)
+    }
+    
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        if indexPath.row == icons.count - 8 {
+            presenter?.scrolledToButtom()
+        }
+    }
+}
+
+// MARK: - IconSearchViewProtocol
+
 extension IconSearchViewController: IconSearchViewProtocol {
+    
     func showIcons(viewModels: [IconViewModel]) {
         self.icons = viewModels
         self.tableView.reloadData()
@@ -131,6 +148,8 @@ extension IconSearchViewController: IconSearchViewProtocol {
     }
 }
 
+// MARK: - UISearchBarDelegate
+
 extension IconSearchViewController: UISearchBarDelegate {
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         presenter?.searchButtonTapped(query: searchBar.text)
@@ -138,15 +157,3 @@ extension IconSearchViewController: UISearchBarDelegate {
     }
 }
 
-extension IconSearchViewController {
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        presenter?.didSelectIcon(at: indexPath.row)
-        tableView.deselectRow(at: indexPath, animated: true)
-    }
-    
-    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        if indexPath.row == icons.count - 9 {
-            presenter?.scrolledToButtom()
-        }
-    }
-}

@@ -8,7 +8,6 @@ protocol IconSearchViewProtocol: AnyObject {
 }
 
 protocol IconSearchPresenterProtocol: AnyObject {
-    func viewDidLoad()
     func searchButtonTapped(query: String?)
     func didSelectIcon(at index: Int)
     func scrolledToButtom()

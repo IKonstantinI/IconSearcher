@@ -1,62 +1,98 @@
-import Foundation
+import UIKit
 
-struct CachedIconsResponse: Codable {
-    let icons: [Icon]
-    let total: Int
-}
-
-protocol RequestCacheServiceProtocol {
-    func getCachedResponse(for query: String) -> CachedIconsResponse?
-    func cacheResponse(_ response: CachedIconsResponse, for query: String)
-}
+// MARK: - Orchestrator Cache Service
 
 final class RequestCacheService: RequestCacheServiceProtocol {
     
-    private let fileManager = FileManager.default
-    private let cachedDirectory: URL
     
-    init() {
-        if let url = fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first {
-            self.cachedDirectory = url.appendingPathComponent("IconsSearchesCache")
-            try? fileManager.createDirectory(at: self.cachedDirectory, withIntermediateDirectories: true)
-        } else {
-            fatalError("Не удалось найти системную директорию кеша.")
-        }
+    // MARK: - Properties
+    
+    private let memoryCache: Cache<String, CacheEntry>
+    private let diskCache: DiskCacheServiceProtocol
+    private let cacheTTL: TimeInterval = 24 * 60 * 60
+    
+    // MARK: - Initalization
+    
+    init(memoryCache: Cache<String, CacheEntry> = .init(),
+        diskCache: DiskCacheServiceProtocol = try! DiskCacheService(directoryName: "IconCache")) {
+        self.memoryCache = memoryCache
+        self.diskCache = diskCache
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(clearMemoryCache),
+            name: UIApplication.didReceiveMemoryWarningNotification,
+            object: nil
+        )
+        
+        cleanUpCache()
     }
     
-    private func filePath(for query: String) -> URL {
-        let safeFileName = Data(query.utf8).base64EncodedString()
-        return cachedDirectory.appendingPathComponent(safeFileName)
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
     
-    func getCachedResponse(for query: String) -> CachedIconsResponse? {
-        let fileURL = filePath(for: query)
-        
-        guard fileManager.fileExists(atPath: fileURL.path) else {
-            return nil
+    // MARK: - Notification Handler
+    
+    @objc private func clearMemoryCache() {
+        print("Received memory warning. Clearing L1 cache.")
+        memoryCache.removeAll()
+    }
+    
+    // MARK: - RequestCacheServiceProtocol
+    
+    func getCachedResponse(for query: String, completion: @escaping (CachedIconsResponse?) -> Void) {
+        if let entry = memoryCache[query], !isStale(entry: entry) {
+            completion(entry.response)
+            return
         }
-        
-        do {
-            let data = try Data(contentsOf: fileURL)
-            let cachedResponse = try JSONDecoder().decode(CachedIconsResponse.self, from: data)
-            print("Загружен кешированный ответ для запроса '\(query)'.")
-            return cachedResponse
-        } catch {
-            print("Ошибка загрузки кеша: \(error.localizedDescription). Удаляем поврежденный файл.")
-            try? fileManager.removeItem(at: fileURL)
-            return nil
+            
+        diskCache.fetch(forKey: query) { [weak self] (result: Result<CacheEntry?, Error>) in
+            guard let self = self else { return }
+                
+            switch result {
+            case .success(let entry):
+                guard let entry = entry else {
+                    completion(nil)
+                    return
+                }
+                    
+                if self.isStale(entry: entry) {
+                    self.diskCache.remove(forKey: query, completion: nil)
+                    completion(nil)
+                    return
+                }
+               
+                self.memoryCache[query] = entry
+                completion(entry.response)
+
+            case .failure(let error):
+                print("\(error.localizedDescription).")
+                self.diskCache.remove(forKey: query, completion: nil)
+                completion(nil)
+            }
         }
     }
     
     func cacheResponse(_ response: CachedIconsResponse, for query: String) {
-        let fileURL = filePath(for: query)
+        let entry = CacheEntry(response: response, timestamp: Date())
         
-        do {
-            let data = try JSONEncoder().encode(response)
-            try data.write(to: fileURL, options: .atomic)
-            print("Ответ для запроса '\(query)' успешно закеширован.")
-        } catch {
-            print("Ошибка кеширования ответа: \(error.localizedDescription)")
+        memoryCache[query] = entry
+        
+        diskCache.save(entry, forKey: query) { error in
+            if let error = error {
+                print("Failed to save to L2 cache: \(error.localizedDescription)")
+            }
         }
+    }
+    
+    func cleanUpCache() {
+        diskCache.cleanUp(maxAge: cacheTTL)
+    }
+    
+    // MARK: - Private Methods
+    
+    private func isStale(entry: CacheEntry) -> Bool {
+        Date().timeIntervalSince(entry.timestamp) >= cacheTTL
     }
 }

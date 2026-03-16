@@ -2,13 +2,15 @@ import UIKit
 
 final class IconTableViewCell: UITableViewCell {
     
+    //MARK: - UI Elements
+    
     private let iconImageView = UIImageView()
     private let sizeLabel = UILabel()
+    private let tagsLabel = UILabel()
     
-    private var tags: [String] = []
-    private var tagsCollectionView: UICollectionView!
+    private var iconURL: URL?
     
-    private var cellPresenter: (any IconCellPresenterProtocol)?
+    //MARK: - Initialization
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -19,82 +21,78 @@ final class IconTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
+    //MARK: - UI Setup
+    
     private func setupUI() {
-        let layout = UICollectionViewFlowLayout()
-        layout.scrollDirection = .horizontal
-        layout.estimatedItemSize = UICollectionViewFlowLayout.automaticSize
-        
-        tagsCollectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
-        tagsCollectionView.translatesAutoresizingMaskIntoConstraints = false
-        tagsCollectionView.backgroundColor = .clear
-        tagsCollectionView.showsHorizontalScrollIndicator = false
-        
-        tagsCollectionView.dataSource = self
-        
-        tagsCollectionView.register(TagCollectionViewCell.self, forCellWithReuseIdentifier: TagCollectionViewCell.reuseIdentifier)
         
         contentView.addSubview(iconImageView)
         contentView.addSubview(sizeLabel)
-        contentView.addSubview(tagsCollectionView)
+        contentView.addSubview(tagsLabel)
+        
+        iconImageView.translatesAutoresizingMaskIntoConstraints = false
+        sizeLabel.translatesAutoresizingMaskIntoConstraints = false
+        tagsLabel.translatesAutoresizingMaskIntoConstraints = false
         
         sizeLabel.font = .systemFont(ofSize: 17, weight: .semibold)
         sizeLabel.textColor = .label
+        
+        tagsLabel.font = .systemFont(ofSize: 14)
+        tagsLabel.textColor = .secondaryLabel
+        tagsLabel.numberOfLines = 0
+        
         iconImageView.contentMode = .scaleAspectFit
         
         NSLayoutConstraint.activate([
             iconImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            iconImageView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            iconImageView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 16),
             iconImageView.widthAnchor.constraint(equalToConstant: 60),
             iconImageView.heightAnchor.constraint(equalToConstant: 60),
+            iconImageView.bottomAnchor.constraint(lessThanOrEqualTo: contentView.bottomAnchor, constant: -16),
                 
             sizeLabel.leadingAnchor.constraint(equalTo: iconImageView.trailingAnchor, constant: 12),
             sizeLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 16),
             sizeLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
                 
-            tagsCollectionView.leadingAnchor.constraint(equalTo: sizeLabel.leadingAnchor),
-            tagsCollectionView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            tagsCollectionView.topAnchor.constraint(equalTo: sizeLabel.bottomAnchor, constant: 8),
-            tagsCollectionView.heightAnchor.constraint(equalToConstant: 28),
-            tagsCollectionView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -16)
+            tagsLabel.leadingAnchor.constraint(equalTo: sizeLabel.leadingAnchor),
+            tagsLabel.trailingAnchor.constraint(equalTo: sizeLabel.trailingAnchor),
+            tagsLabel.topAnchor.constraint(equalTo: sizeLabel.bottomAnchor, constant: 4),
+            tagsLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -16)
         ])
     }
     
-    func configure(with viewModel: IconViewModel, presenter: IconCellPresenterProtocol) {
-        self.cellPresenter = presenter
+    //MARK: - Configuration
+    
+    func configure(with viewModel: IconViewModel) {
         
         sizeLabel.text = viewModel.sizeText
-        tagsLabel.text = viewModel.tags
+        tagsLabel.text = viewModel.tags.map { "#\($0)" }.joined(separator: " ")
         
-        presenter.loadImage(from: viewModel.iconImageURL, to: iconImageView)
+        self.iconURL = viewModel.iconImageURL
+        self.iconImageView.image = nil
+        
+        if let url = self.iconURL {
+            ImageLoader.shared.loadImage(from: url) { [weak self] image in
+                guard let self = self, self.iconURL == url else {
+                    return
+                }
+                self.iconImageView.image = image
+            }
+        }
     }
+    
+    // MARK: - Cell Reuse
     
     override func prepareForReuse() {
         super.prepareForReuse()
+        
         iconImageView.image = nil
-        (cellPresenter as? IconCellPresenter)?.cancleOngoingLoad()
-        cellPresenter = nil
-    }
-}
-
-extension IconTableViewCell: UICollectionViewDataSource {
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return tags.count
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        guard let cell = collectionView.dequeueReusableCell(
-            withReuseIdentifier: TagCollectionViewCell.reuseIdentifier,
-            for: indexPath
-        ) as? TagCollectionViewCell else {
-            fatalError("Could not dequeue TagCollectionViewCell")
+        sizeLabel.text = nil
+        tagsLabel.text = nil
+        iconImageView.image = nil
+        
+        if let iconURL = self.iconURL {
+            ImageLoader.shared.cancelLoad(for: iconURL)
         }
-        
-        let tagName = tags[indexPath.item]
-        
-        cell.configure(with: tagName)
-        
-        return cell
+        self.iconURL = nil
     }
-    
-    
 }

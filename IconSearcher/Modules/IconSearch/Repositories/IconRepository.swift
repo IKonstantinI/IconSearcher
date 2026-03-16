@@ -1,5 +1,7 @@
 import Foundation
 
+//MARK: - Protocol
+
 protocol IconRepositoryProtocol {
     func searchIcons(
         query: String,
@@ -9,9 +11,16 @@ protocol IconRepositoryProtocol {
     )
 }
 
+// MARK: - Implementation
+
 final class IconRepository: IconRepositoryProtocol {
+    
+    // MARK: - Properties
+    
     private let networkService: IconServiceProtocol
     private let cacheService: RequestCacheServiceProtocol
+    
+    // MARK: - Initalization
     
     init(
         networkService: IconServiceProtocol = FreepikService(),
@@ -21,6 +30,8 @@ final class IconRepository: IconRepositoryProtocol {
         self.cacheService = cacheService
     }
     
+    // MARK: - Public Methods
+    
     func searchIcons(
         query: String,
         limit: Int,
@@ -28,23 +39,26 @@ final class IconRepository: IconRepositoryProtocol {
         completion: @escaping (Result<([Icon], total: Int), Error>) -> Void
     ) {
         if start > 0 {
-            print("Пагинация: запрос '\(query)' идет в сеть.")
             networkService.searchIcons(query: query, limit: limit, start: start, completion: completion)
             return
         }
         
-        if let cachedData = cacheService.getCachedResponse(for: query) {
-            print("Запрос '\(query)': данные найдены в кеше.")
-            completion(.success((cachedData.icons, total: cachedData.total)))
-            return
+        cacheService.getCachedResponse(for: query) { [weak self] cachedData in
+            guard self != nil else { return }
+            
+            if let cachedData = cachedData {
+                completion(.success((cachedData.icons, total: cachedData.total)))
+                return
+            }
         }
         
-        print("Запрос '\(query)': кеш пуст, идем в сеть.")
-        networkService.searchIcons(query: query, limit: limit, start: start) { [weak self] result in
+        networkService.searchIcons(query: query, limit: limit, start: start) { result in
             switch result {
             case .success(let (icons, total)):
-                let responseToCache = CachedIconsResponse(icons: icons, total: total)
-                self?.cacheService.cacheResponse(responseToCache, for: query)
+                if start == 0 {
+                    let responseToCache = CachedIconsResponse(icons: icons, total: total)
+                    self.cacheService.cacheResponse(responseToCache, for: query)
+                }
                 completion(.success((icons, total: total)))
                 
             case .failure(let error):

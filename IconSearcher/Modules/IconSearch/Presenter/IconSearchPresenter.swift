@@ -2,9 +2,13 @@ import Foundation
 
 final class IconSearchPresenter: IconSearchPresenterProtocol {
     
+    // MARK: - Properties
+    
     private weak var view: IconSearchViewProtocol?
-    private let imageSaver = ImageSaver()
+    
+    private let imageSaver: ImageSaver
     private let iconRepository: IconRepositoryProtocol
+    
     private var icons: [Icon] = []
     private var currentPage = 0
     private var totalIcons = 0
@@ -12,14 +16,15 @@ final class IconSearchPresenter: IconSearchPresenterProtocol {
     private var isLoading = false
     private var currentQuery = ""
     
-    init(view: IconSearchViewProtocol, iconRepository: IconRepositoryProtocol) {
+    // MARK: - Initalization
+    
+    init(view: IconSearchViewProtocol, iconRepository: IconRepositoryProtocol, imageSaver: ImageSaver = ImageSaver()) {
         self.view = view
         self.iconRepository = iconRepository
+        self.imageSaver = imageSaver
     }
     
-    func viewDidLoad() {
-        print("Presenter: View is ready")
-    }
+    // MARK: - IconIconSearchPresenterProtocol
     
     func searchButtonTapped(query: String?) {
         guard let query = query, !query.isEmpty else { return }
@@ -56,7 +61,15 @@ final class IconSearchPresenter: IconSearchPresenterProtocol {
         loadMoreIcons()
     }
     
-    func loadMoreIcons() {
+    func viewModel(at index: Int) -> IconViewModel? {
+        guard icons.indices.contains(index) else { return nil }
+        let icon = icons[index]
+        return mapIconsToViewModels(icons: [icon]).first
+    }
+    
+    // MARK: - Private Metthods
+    
+    private func loadMoreIcons() {
         guard !isLoading else { return }
         
         if currentPage > 0, icons.count >= totalIcons { return }
@@ -91,12 +104,6 @@ final class IconSearchPresenter: IconSearchPresenterProtocol {
                 }
             }
         }
-    }
-    
-    func viewModel(at index: Int) -> IconViewModel? {
-        guard icons.indices.contains(index) else { return nil }
-        let icon = icons[index]
-        return mapIconsToViewModels(icons: [icon]).first
     }
     
     private func mapIconsToViewModels(icons: [Icon]) -> [IconViewModel] {

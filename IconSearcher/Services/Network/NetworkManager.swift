@@ -2,59 +2,61 @@ import Foundation
 
 final class NetworkManager: NetworkManagerProtocol {
     
+    // MARK: - Properties
+    
     private let session: URLSession
+    private let decoder: JSONDecoder
+    
+    // MARK: - Initalization
     
     init(
-        memoryCapacity: Int = 50 * 1024 * 1024,
-        diskCapacity: Int = 100 * 1024 * 1024
+        session: URLSession = .shared,
+        decoder: JSONDecoder = JSONDecoder()
     ) {
-        let configuration = URLSessionConfiguration.default
-        configuration.urlCache = URLCache(memoryCapacity: memoryCapacity, diskCapacity: diskCapacity)
-        configuration.requestCachePolicy = .returnCacheDataElseLoad
-        self.session = URLSession(configuration: configuration)
+        self.session = session
+        self.decoder = decoder
     }
     
+    // MARK: - NetworkManagerProtocol
+    
     func request<T: Decodable>(url: URL, completion: @escaping (Result<T, Error>) -> Void) {
-        let task = session.dataTask(with: url) { data, responce, error in
-            DispatchQueue.main.async {
-                if let error = error {
-                    completion(.failure(error))
-                    return
-                }
-                guard let data = data else {
-                    completion(.failure(URLError(.cannotParseResponse)))
-                    return
-                }
-                
-                do {
-                    let decodedObject = try JSONDecoder().decode(T.self, from: data)
-                    completion(.success(decodedObject))
-                } catch {
-                    completion(.failure(error))
-                }
-            }
-        }
-        task.resume()
+        let urlRequest = URLRequest(url: url)
+        self.request(with: urlRequest, completion: completion)
     }
     
     func request<T: Decodable>(with request: URLRequest, completion: @escaping (Result<T, Error>) -> Void) {
         let task = session.dataTask(with: request) { data, response, error in
-            DispatchQueue.main.async {
-                if let error = error {
-                    completion(.failure(error))
-                    return
+            let completionOnMain: (Result<T, Error>) -> Void = { result in
+                DispatchQueue.main.async {
+                    completion(result)
                 }
-                guard let data else {
-                    completion(.failure(URLError(.cannotParseResponse)))
-                    return
-                }
-                
-                do {
-                    let decodedObject = try JSONDecoder().decode(T.self, from: data)
-                    completion(.success(decodedObject))
-                } catch {
-                    completion(.failure(error))
-                }
+            }
+            
+            if let error = error {
+                completionOnMain(.failure(NetworkError.other(error)))
+                return
+            }
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                completionOnMain(.failure(NetworkError.invalidURL))
+                return
+            }
+            
+            guard (200...299).contains(httpResponse.statusCode) else {
+                completionOnMain(.failure(NetworkError.serverError(statusCode: httpResponse.statusCode)))
+                return
+            }
+            
+            guard let data = data else {
+                completionOnMain(.failure(NetworkError.noData))
+                return
+            }
+            
+            do {
+                let decodedObject = try self.decoder.decode(T.self, from: data)
+                completionOnMain(.success(decodedObject))
+            } catch {
+                completionOnMain(.failure(NetworkError.decodingError(error)))
             }
         }
         task.resume()
