@@ -2,6 +2,14 @@ import Foundation
 
 final class IconSearchPresenter: IconSearchPresenterProtocol {
     
+    enum ScreenState {
+        case empty
+        case noResult
+        case loading
+        case showingContent
+        case error(String)
+    }
+    
     // MARK: - Properties
     
     private weak var view: IconSearchViewProtocol?
