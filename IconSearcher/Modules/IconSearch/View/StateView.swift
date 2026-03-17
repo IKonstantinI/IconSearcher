@@ -2,7 +2,22 @@ import UIKit
 
 final class StateView: UIView {
     
+    // MARK: - Nested Types
+    
+    struct Configuration {
+        let message: String
+        let image: UIImage?
+    }
+    
     // MARK: - UI Elements
+    
+    private let iconImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.contentMode = .scaleAspectFit
+        imageView.tintColor = .secondaryLabel
+        return imageView
+    }()
     
     private let messageLabel: UILabel = {
         let label = UILabel()
@@ -12,6 +27,22 @@ final class StateView: UIView {
         label.textAlignment = .center
         label.numberOfLines = 0
         return label
+    }()
+    
+    private lazy var stackView: UIStackView = {
+        let stackView = UIStackView(arrangedSubviews: [iconImageView, messageLabel])
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.axis = .vertical
+        stackView.spacing = 8
+        stackView.alignment = .center
+        return stackView
+    }()
+    
+    private let activityIndicator: UIActivityIndicatorView = {
+        let indicator = UIActivityIndicatorView()
+        indicator.translatesAutoresizingMaskIntoConstraints = false
+        indicator.hidesWhenStopped = true
+        return indicator
     }()
     
     // MARK: - initialization
@@ -27,19 +58,35 @@ final class StateView: UIView {
     
     // MARK: - Public Methods
     
-    func configure(with message: String) {
-        messageLabel.text = message
+    func configure(with config: Configuration) {
+        messageLabel.text = config.message
+        iconImageView.image = config.image
+        iconImageView.isHidden = config.image == nil
+    }
+    
+    func startLoading() {
+        stackView.isHidden = true
+        activityIndicator.startAnimating()
+    }
+    
+    func stopLoading() {
+        stackView.isHidden = false
+        activityIndicator.stopAnimating()
     }
     
     // MARK: - UI Setup
     
     private func setupUI() {
-        addSubview(messageLabel)
+        addSubview(stackView)
+        addSubview(activityIndicator)
         
         NSLayoutConstraint.activate([
-            messageLabel.centerYAnchor.constraint(equalTo: self.centerYAnchor),
-            messageLabel.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 20),
-            messageLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -20)
+            stackView.centerYAnchor.constraint(equalTo: self.centerYAnchor),
+            stackView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 20),
+            stackView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -20),
+            
+            activityIndicator.centerXAnchor.constraint(equalTo: self.centerXAnchor),
+            activityIndicator.centerYAnchor.constraint(equalTo: self.centerYAnchor)
         ])
     }
 }

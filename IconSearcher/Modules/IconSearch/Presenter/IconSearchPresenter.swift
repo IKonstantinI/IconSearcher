@@ -2,13 +2,6 @@ import Foundation
 
 final class IconSearchPresenter: IconSearchPresenterProtocol {
     
-    enum ScreenState {
-        case empty
-        case noResult
-        case loading
-        case showingContent
-        case error(String)
-    }
     
     // MARK: - Properties
     
@@ -30,14 +23,15 @@ final class IconSearchPresenter: IconSearchPresenterProtocol {
         self.view = view
         self.iconRepository = iconRepository
         self.imageSaver = imageSaver
+        view.render(state: .empty)
     }
     
-    // MARK: - IconIconSearchPresenterProtocol
+    // MARK: - IconSearchPresenterProtocol
     
     func searchButtonTapped(query: String?) {
         guard let query = query, !query.isEmpty else { return }
         
-        view?.showLoading()
+        view?.render(state: .loading)
         
         currentPage = 0
         totalIcons = 0
@@ -51,31 +45,25 @@ final class IconSearchPresenter: IconSearchPresenterProtocol {
         guard icons.indices.contains(index) else { return }
         let selectedIcon = icons[index]
         
-        view?.showLoading()
+        view?.render(state: .loading)
         
         imageSaver.saveImage(from: selectedIcon.url) { [weak self] result in
-            self?.view?.hideLoading()
+            self?.view?.render(state: .showingContent)
             
             switch result {
             case .success:
-                self?.view?.showAlert(title: "Ok", message: "Иконка была сохранена в галерею.")
+                self?.view?.showAlert(title: "Ok", message: "The icon has been saved to the gallery.")
             case .failure(let error):
                 self?.view?.showAlert(title: "Error", message: error.localizedDescription)
             }
         }
     }
     
-    func scrolledToButtom() {
+    func scrolledToBottom() {
         loadMoreIcons()
     }
     
-    func viewModel(at index: Int) -> IconViewModel? {
-        guard icons.indices.contains(index) else { return nil }
-        let icon = icons[index]
-        return mapIconsToViewModels(icons: [icon]).first
-    }
-    
-    // MARK: - Private Metthods
+    // MARK: - Private Methods
     
     private func loadMoreIcons() {
         guard !isLoading else { return }
@@ -85,7 +73,7 @@ final class IconSearchPresenter: IconSearchPresenterProtocol {
         isLoading = true
         
         if currentPage == 0 {
-            view?.showLoading()
+            view?.render(state: .loading)
         }
         
         let start = currentPage * pageSize
@@ -93,7 +81,6 @@ final class IconSearchPresenter: IconSearchPresenterProtocol {
         iconRepository.searchIcons(query: currentQuery, limit: pageSize, start: start) { [weak self] result in
             guard let self = self else { return }
             
-            self.view?.hideLoading()
             self.isLoading = false
             
             switch result {
@@ -106,9 +93,16 @@ final class IconSearchPresenter: IconSearchPresenterProtocol {
                 
                 let viewModels = self.mapIconsToViewModels(icons: self.icons)
                 self.view?.showIcons(viewModels: viewModels)
+                
+                if self.icons.isEmpty {
+                    self.view?.render(state: .noResult)
+                } else {
+                    self.view?.render(state: .showingContent)
+                }
+                
             case .failure(let error):
                 if self.currentPage == 0 {
-                    self.view?.showAlert(title: "Error", message: error.localizedDescription)
+                    self.view?.render(state: .error(error.localizedDescription))
                 }
             }
         }

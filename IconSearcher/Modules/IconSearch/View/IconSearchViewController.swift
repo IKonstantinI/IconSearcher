@@ -6,11 +6,17 @@ final class IconSearchViewController: UIViewController, UITableViewDelegate {
     
     private let searchBar = UISearchBar()
     private let tableView = UITableView()
-    private let activityIndicator = UIActivityIndicatorView(style: .large)
+    
+    private lazy var stateView: StateView = {
+        let view = StateView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.isHidden = true
+        return view
+    }()
     
     // MARK: - Properties
     
-    private var icons: [IconViewModel] = []
+    private var viewModels: [IconViewModel] = []
     
     var presenter: IconSearchPresenterProtocol?
     
@@ -39,6 +45,8 @@ final class IconSearchViewController: UIViewController, UITableViewDelegate {
         view.backgroundColor = .white
         title = "Icon Searcher"
         
+        view.addSubview(stateView)
+        
         searchBar.translatesAutoresizingMaskIntoConstraints = false
         searchBar.delegate = self
         view.addSubview(searchBar)
@@ -52,13 +60,9 @@ final class IconSearchViewController: UIViewController, UITableViewDelegate {
         tableView.register(IconTableViewCell.self, forCellReuseIdentifier: "IconCell")
         view.addSubview(tableView)
         
-        activityIndicator.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(activityIndicator)
+        
         
         NSLayoutConstraint.activate([
-            activityIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            activityIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-            
             searchBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             searchBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             searchBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
@@ -66,7 +70,12 @@ final class IconSearchViewController: UIViewController, UITableViewDelegate {
             tableView.topAnchor.constraint(equalTo: searchBar.bottomAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            
+            stateView.topAnchor.constraint(equalTo: self.view.topAnchor),
+            stateView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
+            stateView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
+            stateView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor)
         ])
     }
 }
@@ -76,7 +85,7 @@ final class IconSearchViewController: UIViewController, UITableViewDelegate {
 extension IconSearchViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return icons.count
+        return viewModels.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -84,7 +93,7 @@ extension IconSearchViewController: UITableViewDataSource {
             return UITableViewCell()
         }
         
-        let icon = icons[indexPath.row]
+        let icon = viewModels[indexPath.row]
         cell.configure(with: icon)
         return cell
     }
@@ -95,12 +104,12 @@ extension IconSearchViewController: UITableViewDataSource {
 extension IconSearchViewController: UITableViewDataSourcePrefetching {
     
     func tableView(_ tableView: UITableView, prefetchRowsAt indexPaths: [IndexPath]) {
-        let urls = indexPaths.compactMap { icons[$0.row].iconImageURL }
+        let urls = indexPaths.compactMap { viewModels[$0.row].iconImageURL }
         urls.forEach { ImageLoader.shared.loadImage(from: $0) { _ in } }
     }
     
     func tableView(_ tableView: UITableView, cancelPrefetchingForRowsAt indexPaths: [IndexPath]) {
-        let urls = indexPaths.compactMap { icons[$0.row].iconImageURL }
+        let urls = indexPaths.compactMap { viewModels[$0.row].iconImageURL }
         urls.forEach { ImageLoader.shared.cancelLoad(for: $0)}
     }
 }
@@ -114,8 +123,8 @@ extension IconSearchViewController {
     }
     
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        if indexPath.row == icons.count - 8 {
-            presenter?.scrolledToButtom()
+        if indexPath.row == viewModels.count - 8 {
+            presenter?.scrolledToBottom()
         }
     }
 }
@@ -125,16 +134,8 @@ extension IconSearchViewController {
 extension IconSearchViewController: IconSearchViewProtocol {
     
     func showIcons(viewModels: [IconViewModel]) {
-        self.icons = viewModels
+        self.viewModels = viewModels
         self.tableView.reloadData()
-    }
-    
-    func showLoading() {
-        activityIndicator.startAnimating()
-    }
-    
-    func hideLoading() {
-        activityIndicator.stopAnimating()
     }
     
     func showAlert(title: String, message: String) {
@@ -144,7 +145,44 @@ extension IconSearchViewController: IconSearchViewProtocol {
             preferredStyle: .alert
         )
         alert.addAction(UIAlertAction(title: "OK", style: .default))
-        present(alert, animated: true)
+    }
+    
+    func render(state: ScreenState) {
+        switch state {
+        case .empty:
+            tableView.isHidden = true
+            stateView.isHidden = false
+            stateView.stopLoading()
+            stateView.configure(
+                with: .init(message: "Enter a query to search for icons", image: UIImage(systemName: "keyboard"))
+            )
+            
+        case .noResult:
+            tableView.isHidden = true
+            stateView.isHidden = false
+            stateView.stopLoading()
+            stateView.configure(
+                with: .init(message: "Not found", image: UIImage(systemName: "magnifyingglass.circle"))
+            )
+            
+        case .loading:
+            tableView.isHidden = true
+            stateView.isHidden = false
+            stateView.startLoading()
+            
+        case .showingContent:
+            tableView.isHidden = false
+            stateView.isHidden = true
+            stateView.stopLoading()
+            
+        case .error(let message):
+            tableView.isHidden = true
+            stateView.isHidden = false
+            stateView.stopLoading()
+            stateView.configure(
+                with: .init(message: message, image: UIImage(systemName: "xmark.octagon"))
+            )
+        }
     }
 }
 

@@ -2,16 +2,21 @@ import Foundation
 
 protocol IconSearchViewProtocol: AnyObject {
     func showIcons(viewModels: [IconViewModel])
-    func showLoading()
-    func hideLoading()
+    func render(state: ScreenState)
     func showAlert(title: String, message: String)
 }
 
 protocol IconSearchPresenterProtocol: AnyObject {
     func searchButtonTapped(query: String?)
     func didSelectIcon(at index: Int)
-    func scrolledToButtom()
-    func viewModel(at index: Int) -> IconViewModel?
+    func scrolledToBottom()
 }
 
+enum ScreenState {
+    case empty
+    case noResult
+    case loading
+    case showingContent
+    case error(String)
+}
 
