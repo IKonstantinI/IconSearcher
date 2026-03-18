@@ -1,7 +1,7 @@
 import Foundation
 
 private struct ApiKeys: Codable {
-    let FreepikApiKey: String
+    let freepikApiKey: String
 }
 
 final class FreepikService: IconServiceProtocol {
@@ -25,12 +25,12 @@ final class FreepikService: IconServiceProtocol {
             let decoder = PropertyListDecoder()
             let keys = try decoder.decode(ApiKeys.self, from: data)
             
-            if keys.FreepikApiKey.isEmpty {
+            if keys.freepikApiKey.isEmpty {
                 assertionFailure("Keys.plist is empty")
                 return nil
             }
             
-            return keys.FreepikApiKey
+            return keys.freepikApiKey
         } catch {
             assertionFailure("Could not decode Keys.plist")
             return nil

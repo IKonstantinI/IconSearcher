@@ -45,16 +45,12 @@ final class IconSearchPresenter: IconSearchPresenterProtocol {
         guard icons.indices.contains(index) else { return }
         let selectedIcon = icons[index]
         
-        view?.render(state: .loading)
-        
         imageSaver.saveImage(from: selectedIcon.url) { [weak self] result in
-            self?.view?.render(state: .showingContent)
-            
             switch result {
             case .success:
-                self?.view?.showAlert(title: "Ok", message: "The icon has been saved to the gallery.")
+                self?.view?.showSaveNotification(isSuccses: true, message: nil)
             case .failure(let error):
-                self?.view?.showAlert(title: "Error", message: error.localizedDescription)
+                self?.view?.showSaveNotification(isSuccses: false, message: error.localizedDescription)
             }
         }
     }

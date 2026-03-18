@@ -78,6 +78,35 @@ final class IconSearchViewController: UIViewController, UITableViewDelegate {
             stateView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor)
         ])
     }
+    
+    private func showHUD(message: String, systemImageName: String) {
+        let hudView = NotificationHUDView()
+        let image = UIImage(systemName: systemImageName)
+        hudView.configure(with: image, text: message)
+        
+        view.addSubview(hudView)
+        
+        NSLayoutConstraint.activate([
+            hudView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            hudView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            hudView.widthAnchor.constraint(equalToConstant: 150),
+            hudView.heightAnchor.constraint(equalToConstant: 150)
+        ])
+        
+        hudView.alpha = 0
+        hudView.transform = CGAffineTransform(scaleX: 0.8, y: 0.8)
+        
+        UIView.animate(withDuration: 0.3, delay: 0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0) {
+            hudView.alpha = 1
+            hudView.transform = .identity
+        }
+        
+        UIView.animate(withDuration: 0.3, delay: 1.5) {
+            hudView.alpha = 0
+        } completion: { _ in
+            hudView.removeFromSuperview()
+        }
+    }
 }
 
 // MARK: - UITableViewDataSource
@@ -138,13 +167,12 @@ extension IconSearchViewController: IconSearchViewProtocol {
         self.tableView.reloadData()
     }
     
-    func showAlert(title: String, message: String) {
-        let alert = UIAlertController(
-            title: title,
-            message: message,
-            preferredStyle: .alert
-        )
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
+    func showSaveNotification(isSuccses: Bool, message: String?) {
+        if isSuccses {
+            showHUD(message: "Saved", systemImageName: "checkmark.circle")
+        } else {
+            showHUD(message: message ?? "Error", systemImageName: "xmark.octagon")
+        }
     }
     
     func render(state: ScreenState) {

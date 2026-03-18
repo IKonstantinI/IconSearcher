@@ -3,7 +3,7 @@ import Foundation
 protocol IconSearchViewProtocol: AnyObject {
     func showIcons(viewModels: [IconViewModel])
     func render(state: ScreenState)
-    func showAlert(title: String, message: String)
+    func showSaveNotification(isSuccses: Bool, message: String?)
 }
 
 protocol IconSearchPresenterProtocol: AnyObject {
