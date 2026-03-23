@@ -7,7 +7,7 @@ final class IconSearchPresenter: IconSearchPresenterProtocol {
     
     private weak var view: IconSearchViewProtocol?
     
-    private let imageSaver: ImageSaver
+    private let imageSaver: ImageSaverProtocol
     private let iconRepository: IconRepositoryProtocol
     
     private var icons: [Icon] = []
@@ -19,11 +19,27 @@ final class IconSearchPresenter: IconSearchPresenterProtocol {
     
     // MARK: - Initalization
     
-    init(view: IconSearchViewProtocol, iconRepository: IconRepositoryProtocol, imageSaver: ImageSaver = ImageSaver()) {
+    init(
+        view: IconSearchViewProtocol,
+        iconRepository: IconRepositoryProtocol,
+        imageSaver: ImageSaverProtocol
+    ) {
         self.view = view
         self.iconRepository = iconRepository
         self.imageSaver = imageSaver
         view.render(state: .empty)
+    }
+    
+    /// Convenience init для production use
+    convenience init(
+        view: IconSearchViewProtocol,
+        iconRepository: IconRepositoryProtocol
+    ) {
+        self.init(
+            view: view,
+            iconRepository: iconRepository,
+            imageSaver: ImageSaver()
+        )
     }
     
     // MARK: - IconSearchPresenterProtocol

@@ -1,56 +1,40 @@
 import UIKit
-import Photos
 
-final class ImageSaver {
-    enum ImageSaverError: LocalizedError {
-        case permissionDenied
-        case unknownSaveError
-        
-        var errorDescription: String? {
-            switch self {
-            case .permissionDenied:
-                return "Доступ к галерее запрещен. Пожалуйста, разрешите доступ в Настройках."
-            case .unknownSaveError:
-                return "Не удалось сохранить изображение по неизвестной причине."
+final class ImageSaver: @unchecked Sendable, ImageSaverProtocol {
+    
+    // MARK: - Properties
+    
+    private let downloader: ImageDownloaderProtocol
+    private let photoManager: PhotoLibraryManagerProtocol
+    
+    // MARK: - Initialization
+    
+
+    init(
+        downloader: ImageDownloaderProtocol = ImageDownloader(),
+        photoManager: PhotoLibraryManagerProtocol = PhotoLibraryManager()
+    ) {
+        self.downloader = downloader
+        self.photoManager = photoManager
+    }
+    
+    // MARK: - Public Methods
+
+    func saveImage(
+        from url: URL,
+        completion: @escaping (Result<Void, Error>) -> Void
+    ) {
+        downloader.downloadImage(from: url) { [weak self] result in
+            guard let self = self else { return }
+            
+            switch result {
+            case .success(let image):
+                self.photoManager.saveImage(image, completion: completion)
+                
+            case .failure(let error):
+                completion(.failure(error))
             }
         }
     }
-    
-    
-    func saveImage(from url: URL, completion: @escaping (Result<Void, Error>) -> Void) {
-        URLSession.shared.dataTask(with: url) { data, _, error in
-            if let error = error {
-                DispatchQueue.main.async { completion(.failure(error)) }
-                return
-            }
-            
-            guard let data = data, UIImage(data: data) != nil else {
-                let downloadError = URLError(.badServerResponse)
-                DispatchQueue.main.async { completion(.failure(downloadError)) }
-                return
-            }
-            
-            PHPhotoLibrary.requestAuthorization(for: .addOnly) { status in
-                guard status == .authorized else {
-                    DispatchQueue.main.async { completion(.failure(ImageSaverError.permissionDenied)) }
-                    return
-                }
-                
-                PHPhotoLibrary.shared().performChanges({
-                    let request = PHAssetCreationRequest.forAsset()
-                    request.addResource(with: .photo, data: data, options: nil)
-                }) { success, error in
-                    DispatchQueue.main.async {
-                        if let error = error {
-                            completion(.failure(error))
-                        } else if success {
-                            completion(.success(()))
-                        } else {
-                            completion(.failure(ImageSaverError.unknownSaveError))
-                        }
-                    }
-                }
-            }
-        }.resume()
-    }
 }
+

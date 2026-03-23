@@ -1,6 +1,6 @@
 import Foundation
 
-final class NetworkManager: NetworkManagerProtocol {
+final class NetworkManager: @unchecked Sendable, NetworkManagerProtocol {
     
     // MARK: - Properties
     

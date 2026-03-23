@@ -12,7 +12,7 @@ protocol IconSearchPresenterProtocol: AnyObject {
     func scrolledToBottom()
 }
 
-enum ScreenState {
+enum ScreenState: Equatable {
     case empty
     case noResult
     case loading

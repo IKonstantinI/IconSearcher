@@ -1,49 +1,40 @@
 import Foundation
 
-private struct ApiKeys: Codable {
+private struct FreepikApiKeys: Codable {
     let freepikApiKey: String
 }
 
 final class FreepikService: IconServiceProtocol {
     
+    // MARK: - Properties
+    
+    private let apiKey: String
     private let networkManager: NetworkManagerProtocol
-    private let apiKey: String?
     
-    init(networkManager: NetworkManagerProtocol = NetworkManager()) {
+    // MARK: - Initialization
+
+    init(
+        apiKey: String,
+        networkManager: NetworkManagerProtocol
+    ) {
+        precondition(!apiKey.isEmpty, "API key must not be empty")
+        self.apiKey = apiKey
         self.networkManager = networkManager
-        self.apiKey = Self.loadApiKey()
     }
     
-    private static func loadApiKey() -> String? {
-        guard let keysFileURL = Bundle.main.url(forResource: "Keys", withExtension: "plist") else {
-            assertionFailure("Keys.plist not found.")
-            return nil
-        }
-        
-        do {
-            let data = try Data(contentsOf: keysFileURL)
-            let decoder = PropertyListDecoder()
-            let keys = try decoder.decode(ApiKeys.self, from: data)
-            
-            if keys.freepikApiKey.isEmpty {
-                assertionFailure("Keys.plist is empty")
-                return nil
-            }
-            
-            return keys.freepikApiKey
-        } catch {
-            assertionFailure("Could not decode Keys.plist")
-            return nil
-        }
+    convenience init(networkManager: NetworkManagerProtocol = NetworkManager()) {
+        let apiKey = Self.loadApiKeyFromBundle() ?? ""
+        self.init(apiKey: apiKey, networkManager: networkManager)
     }
     
-    func searchIcons(query: String, limit: Int, start: Int, completion: @escaping (Result<([Icon], total: Int), Error>) -> Void) {
-        
-        guard let apiKey = apiKey else {
-            completion(.failure(FreepikServiceError.apiKeyMissing))
-            return
-        }
-        
+    // MARK: - IconServiceProtocol
+    
+    func searchIcons(
+        query: String,
+        limit: Int,
+        start: Int,
+        completion: @escaping (Result<([Icon], total: Int), Error>) -> Void
+    ) {
         var components = API.Freepik.components
         let page = (start / limit) + 1
         
@@ -69,11 +60,14 @@ final class FreepikService: IconServiceProtocol {
                 let icons = self.map(freepikIcons: response.data)
                 let total = response.meta.pagination.total
                 completion(.success((icons, total)))
+                
             case .failure(let error):
                 completion(.failure(error))
             }
         }
     }
+    
+    // MARK: - Private Methods
     
     private func map(freepikIcons: [FreepikIcon]) -> [Icon] {
         return freepikIcons.compactMap { freepikIcon in
@@ -90,6 +84,31 @@ final class FreepikService: IconServiceProtocol {
                 width: bestThumbnail.width,
                 height: bestThumbnail.height
             )
+        }
+    }
+    
+    // MARK: - Bundle Loading (private)
+
+    private static func loadApiKeyFromBundle() -> String? {
+        guard let keysFileURL = Bundle.main.url(forResource: "Keys", withExtension: "plist") else {
+            assertionFailure("Keys.plist not found. This is expected in unit tests.")
+            return nil
+        }
+        
+        do {
+            let data = try Data(contentsOf: keysFileURL)
+            let decoder = PropertyListDecoder()
+            let keys = try decoder.decode(FreepikApiKeys.self, from: data)
+            
+            if keys.freepikApiKey.isEmpty {
+                assertionFailure("Keys.plist is empty")
+                return nil
+            }
+            
+            return keys.freepikApiKey
+        } catch {
+            assertionFailure("Could not decode Keys.plist: \(error)")
+            return nil
         }
     }
 }

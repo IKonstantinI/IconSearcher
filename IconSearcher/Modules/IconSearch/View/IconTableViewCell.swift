@@ -1,28 +1,29 @@
 import UIKit
 
 final class IconTableViewCell: UITableViewCell {
-    
+
     //MARK: - UI Elements
-    
+
     private let iconImageView = UIImageView()
     private let sizeLabel = UILabel()
     private let tagsLabel = UILabel()
-    
+
     private var iconURL: URL?
-    
+    private let imageLoader = ServiceAssembly.makeImageLoader()
+
     //MARK: - Initialization
-    
+
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupUI()
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     //MARK: - UI Setup
-    
+
     private func setupUI() {
         
         contentView.addSubview(iconImageView)
@@ -71,7 +72,7 @@ final class IconTableViewCell: UITableViewCell {
         self.iconImageView.image = nil
         
         if let url = self.iconURL {
-            ImageLoader.shared.loadImage(from: url) { [weak self] image in
+            imageLoader.loadImage(from: url) { [weak self] image in
                 guard let self = self, self.iconURL == url else {
                     return
                 }
@@ -79,18 +80,18 @@ final class IconTableViewCell: UITableViewCell {
             }
         }
     }
-    
+
     // MARK: - Cell Reuse
-    
+
     override func prepareForReuse() {
         super.prepareForReuse()
-        
+
         iconImageView.image = nil
         sizeLabel.text = nil
         tagsLabel.text = nil
-        
+
         if let iconURL = self.iconURL {
-            ImageLoader.shared.cancelLoad(for: iconURL)
+            imageLoader.cancelLoad(for: iconURL)
         }
         self.iconURL = nil
     }

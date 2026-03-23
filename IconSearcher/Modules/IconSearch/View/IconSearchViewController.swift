@@ -15,9 +15,10 @@ final class IconSearchViewController: UIViewController, UITableViewDelegate {
     }()
     
     // MARK: - Properties
-    
+
     private var viewModels: [IconViewModel] = []
-    
+    private let imageLoader = ServiceAssembly.makeImageLoader()
+
     var presenter: IconSearchPresenterProtocol?
     
     // MARK: - Initialization
@@ -131,15 +132,15 @@ extension IconSearchViewController: UITableViewDataSource {
 // MARK: - UITableViewDataSourcePrefetching
 
 extension IconSearchViewController: UITableViewDataSourcePrefetching {
-    
+
     func tableView(_ tableView: UITableView, prefetchRowsAt indexPaths: [IndexPath]) {
         let urls = indexPaths.compactMap { viewModels[$0.row].iconImageURL }
-        urls.forEach { ImageLoader.shared.loadImage(from: $0) { _ in } }
+        urls.forEach { imageLoader.loadImage(from: $0) { _ in } }
     }
-    
+
     func tableView(_ tableView: UITableView, cancelPrefetchingForRowsAt indexPaths: [IndexPath]) {
         let urls = indexPaths.compactMap { viewModels[$0.row].iconImageURL }
-        urls.forEach { ImageLoader.shared.cancelLoad(for: $0)}
+        urls.forEach { imageLoader.cancelLoad(for: $0)}
     }
 }
 

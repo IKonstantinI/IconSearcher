@@ -6,7 +6,18 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXContainerItemProxy section */
+		B57442E52F71DBF3008A0DAD /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B5C64D462F4F7ED1005DB3A4 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B5C64D4D2F4F7ED1005DB3A4;
+			remoteInfo = IconSearcher;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		B57442E12F71DBF3008A0DAD /* IconSearcherTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = IconSearcherTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5C64D4E2F4F7ED1005DB3A4 /* IconSearcher.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = IconSearcher.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -21,6 +32,11 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		B57442E22F71DBF3008A0DAD /* IconSearcherTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = IconSearcherTests;
+			sourceTree = "<group>";
+		};
 		B5C64D502F4F7ED1005DB3A4 /* IconSearcher */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -32,6 +48,13 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		B57442DE2F71DBF3008A0DAD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B5C64D4B2F4F7ED1005DB3A4 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -46,6 +69,7 @@
 			isa = PBXGroup;
 			children = (
 				B5C64D502F4F7ED1005DB3A4 /* IconSearcher */,
+				B57442E22F71DBF3008A0DAD /* IconSearcherTests */,
 				B5C64D4F2F4F7ED1005DB3A4 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -54,6 +78,7 @@
 			isa = PBXGroup;
 			children = (
 				B5C64D4E2F4F7ED1005DB3A4 /* IconSearcher.app */,
+				B57442E12F71DBF3008A0DAD /* IconSearcherTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -61,6 +86,29 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		B57442E02F71DBF3008A0DAD /* IconSearcherTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B57442E72F71DBF3008A0DAD /* Build configuration list for PBXNativeTarget "IconSearcherTests" */;
+			buildPhases = (
+				B57442DD2F71DBF3008A0DAD /* Sources */,
+				B57442DE2F71DBF3008A0DAD /* Frameworks */,
+				B57442DF2F71DBF3008A0DAD /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B57442E62F71DBF3008A0DAD /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				B57442E22F71DBF3008A0DAD /* IconSearcherTests */,
+			);
+			name = IconSearcherTests;
+			packageProductDependencies = (
+			);
+			productName = IconSearcherTests;
+			productReference = B57442E12F71DBF3008A0DAD /* IconSearcherTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		B5C64D4D2F4F7ED1005DB3A4 /* IconSearcher */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = B5C64D612F4F7ED2005DB3A4 /* Build configuration list for PBXNativeTarget "IconSearcher" */;
@@ -90,9 +138,13 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 2620;
+				LastSwiftUpdateCheck = 2630;
 				LastUpgradeCheck = 2620;
 				TargetAttributes = {
+					B57442E02F71DBF3008A0DAD = {
+						CreatedOnToolsVersion = 26.3;
+						TestTargetID = B5C64D4D2F4F7ED1005DB3A4;
+					};
 					B5C64D4D2F4F7ED1005DB3A4 = {
 						CreatedOnToolsVersion = 26.2;
 					};
@@ -113,11 +165,19 @@
 			projectRoot = "";
 			targets = (
 				B5C64D4D2F4F7ED1005DB3A4 /* IconSearcher */,
+				B57442E02F71DBF3008A0DAD /* IconSearcherTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		B57442DF2F71DBF3008A0DAD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B5C64D4C2F4F7ED1005DB3A4 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -128,6 +188,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		B57442DD2F71DBF3008A0DAD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B5C64D4A2F4F7ED1005DB3A4 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -137,7 +204,55 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		B57442E62F71DBF3008A0DAD /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B5C64D4D2F4F7ED1005DB3A4 /* IconSearcher */;
+			targetProxy = B57442E52F71DBF3008A0DAD /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		B57442E82F71DBF3008A0DAD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = traning.IconSearcherTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/IconSearcher.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/IconSearcher";
+			};
+			name = Debug;
+		};
+		B57442E92F71DBF3008A0DAD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = traning.IconSearcherTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/IconSearcher.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/IconSearcher";
+			};
+			name = Release;
+		};
 		B5C64D622F4F7ED2005DB3A4 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -332,6 +447,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		B57442E72F71DBF3008A0DAD /* Build configuration list for PBXNativeTarget "IconSearcherTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B57442E82F71DBF3008A0DAD /* Debug */,
+				B57442E92F71DBF3008A0DAD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		B5C64D492F4F7ED1005DB3A4 /* Build configuration list for PBXProject "IconSearcher" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
