@@ -48,6 +48,7 @@ final class IconSearcherTests: XCTestCase {
         XCTAssertEqual(viewModel.iconImageURL, testURL, "URL должен совпадать")
     }
     
+    @MainActor
     func testScreenState_Equatable() {
         XCTAssertEqual(ScreenState.empty, ScreenState.empty)
         XCTAssertEqual(ScreenState.loading, ScreenState.loading)
