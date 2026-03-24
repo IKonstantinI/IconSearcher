@@ -61,8 +61,6 @@ final class IconSearchViewController: UIViewController, UITableViewDelegate {
         tableView.register(IconTableViewCell.self, forCellReuseIdentifier: "IconCell")
         view.addSubview(tableView)
         
-        
-        
         NSLayoutConstraint.activate([
             searchBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             searchBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),

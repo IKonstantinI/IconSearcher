@@ -12,7 +12,6 @@ final class RequestCacheService: RequestCacheServiceProtocol {
         category: "RequestCache"
     )
     
-    
     // MARK: - Properties
     
     private let memoryCache: Cache<String, CacheEntry>

@@ -3,7 +3,6 @@ import UIKit
 final class IconSearchAssembly {
 
     static func assemble() -> IconSearchViewController {
-        // Создаем FreepikService через factory
         guard let networkService = FreepikServiceFactory.makeDefault() else {
             fatalError("Failed to create FreepikService. Check Keys.plist")
         }
