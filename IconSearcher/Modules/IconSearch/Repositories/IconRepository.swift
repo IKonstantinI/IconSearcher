@@ -20,7 +20,7 @@ final class IconRepository: IconRepositoryProtocol {
     private let networkService: IconServiceProtocol
     private let cacheService: RequestCacheServiceProtocol
     
-    // MARK: - Initalization
+    // MARK: - Initialization
 
     init(
         networkService: IconServiceProtocol,

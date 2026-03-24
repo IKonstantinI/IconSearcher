@@ -17,7 +17,7 @@ final class IconSearchPresenter: IconSearchPresenterProtocol {
     private var isLoading = false
     private var currentQuery = ""
     
-    // MARK: - Initalization
+    // MARK: - Initialization
     
     init(
         view: IconSearchViewProtocol,
@@ -30,7 +30,6 @@ final class IconSearchPresenter: IconSearchPresenterProtocol {
         view.render(state: .empty)
     }
     
-    /// Convenience init для production use
     convenience init(
         view: IconSearchViewProtocol,
         iconRepository: IconRepositoryProtocol

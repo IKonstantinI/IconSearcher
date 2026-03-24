@@ -7,7 +7,7 @@ final class NetworkManager: @unchecked Sendable, NetworkManagerProtocol {
     private let session: URLSession
     private let decoder: JSONDecoder
     
-    // MARK: - Initalization
+    // MARK: - Initialization
     
     init(
         session: URLSession = .shared,

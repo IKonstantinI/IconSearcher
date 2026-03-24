@@ -1,8 +1,23 @@
 import UIKit
 
 final class IconTableViewCell: UITableViewCell {
+    
+    // MARK: - Constants
+    
+    private enum LayoutConstants {
+        static let thumbnailSize: CGFloat = 60
+        static let cellPadding: CGFloat = 16
+        static let horizontalSpacing: CGFloat = 12
+        static let verticalSpacing: CGFloat = 4
+    }
+    
+    private enum StyleConstants {
+        static let titleFontSize: CGFloat = 17
+        static let titleFontWeight: UIFont.Weight = .semibold
+        static let subtitleFontSize: CGFloat = 14
+    }
 
-    //MARK: - UI Elements
+    // MARK: - UI Elements
 
     private let iconImageView = UIImageView()
     private let sizeLabel = UILabel()
@@ -11,7 +26,7 @@ final class IconTableViewCell: UITableViewCell {
     private var iconURL: URL?
     private let imageLoader: ImageLoader?
 
-    //MARK: - Initialization
+    // MARK: - Initialization
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         self.imageLoader = ServiceAssembly.makeImageLoader()
@@ -23,7 +38,7 @@ final class IconTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
 
-    //MARK: - UI Setup
+    // MARK: - UI Setup
 
     private func setupUI() {
         
@@ -35,34 +50,34 @@ final class IconTableViewCell: UITableViewCell {
         sizeLabel.translatesAutoresizingMaskIntoConstraints = false
         tagsLabel.translatesAutoresizingMaskIntoConstraints = false
         
-        sizeLabel.font = .systemFont(ofSize: 17, weight: .semibold)
+        sizeLabel.font = .systemFont(ofSize: StyleConstants.titleFontSize, weight: StyleConstants.titleFontWeight)
         sizeLabel.textColor = .label
         
-        tagsLabel.font = .systemFont(ofSize: 14)
+        tagsLabel.font = .systemFont(ofSize: StyleConstants.subtitleFontSize)
         tagsLabel.textColor = .secondaryLabel
         tagsLabel.numberOfLines = 0
         
         iconImageView.contentMode = .scaleAspectFit
         
         NSLayoutConstraint.activate([
-            iconImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            iconImageView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 16),
-            iconImageView.widthAnchor.constraint(equalToConstant: 60),
-            iconImageView.heightAnchor.constraint(equalToConstant: 60),
-            iconImageView.bottomAnchor.constraint(lessThanOrEqualTo: contentView.bottomAnchor, constant: -16),
+            iconImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: LayoutConstants.cellPadding),
+            iconImageView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: LayoutConstants.cellPadding),
+            iconImageView.widthAnchor.constraint(equalToConstant: LayoutConstants.thumbnailSize),
+            iconImageView.heightAnchor.constraint(equalToConstant: LayoutConstants.thumbnailSize),
+            iconImageView.bottomAnchor.constraint(lessThanOrEqualTo: contentView.bottomAnchor, constant: -LayoutConstants.cellPadding),
                 
-            sizeLabel.leadingAnchor.constraint(equalTo: iconImageView.trailingAnchor, constant: 12),
-            sizeLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 16),
-            sizeLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            sizeLabel.leadingAnchor.constraint(equalTo: iconImageView.trailingAnchor, constant: LayoutConstants.horizontalSpacing),
+            sizeLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: LayoutConstants.cellPadding),
+            sizeLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -LayoutConstants.cellPadding),
                 
             tagsLabel.leadingAnchor.constraint(equalTo: sizeLabel.leadingAnchor),
             tagsLabel.trailingAnchor.constraint(equalTo: sizeLabel.trailingAnchor),
-            tagsLabel.topAnchor.constraint(equalTo: sizeLabel.bottomAnchor, constant: 4),
-            tagsLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -16)
+            tagsLabel.topAnchor.constraint(equalTo: sizeLabel.bottomAnchor, constant: LayoutConstants.verticalSpacing),
+            tagsLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -LayoutConstants.cellPadding)
         ])
     }
     
-    //MARK: - Configuration
+    // MARK: - Configuration
     
     func configure(with viewModel: IconViewModel) {
         
