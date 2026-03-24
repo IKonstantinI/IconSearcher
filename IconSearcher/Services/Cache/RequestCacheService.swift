@@ -1,8 +1,16 @@
 import UIKit
+import os.log
 
 // MARK: - Orchestrator Cache Service
 
 final class RequestCacheService: RequestCacheServiceProtocol {
+    
+    // MARK: - Logger
+    
+    private let logger = Logger(
+        subsystem: "com.bertoldi.IconSearcher",
+        category: "RequestCache"
+    )
     
     
     // MARK: - Properties
@@ -11,10 +19,12 @@ final class RequestCacheService: RequestCacheServiceProtocol {
     private let diskCache: DiskCacheServiceProtocol
     private let cacheTTL: TimeInterval = 24 * 60 * 60
     
-    // MARK: - Initalization
-    
-    init(memoryCache: Cache<String, CacheEntry> = .init(),
-        diskCache: DiskCacheServiceProtocol = try! DiskCacheService(directoryName: "IconCache")) {
+    // MARK: - Initialization
+
+    init(
+        memoryCache: Cache<String, CacheEntry> = .init(),
+        diskCache: DiskCacheServiceProtocol
+    ) throws {
         self.memoryCache = memoryCache
         self.diskCache = diskCache
         
@@ -28,6 +38,15 @@ final class RequestCacheService: RequestCacheServiceProtocol {
         cleanUpCache()
     }
     
+    convenience init() {
+        do {
+            let diskCache = try DiskCacheService(directoryName: "IconCache")
+            try self.init(diskCache: diskCache)
+        } catch {
+            fatalError("Failed to create DiskCacheService: \(error)")
+        }
+    }
+    
     deinit {
         NotificationCenter.default.removeObserver(self)
     }
@@ -35,7 +54,7 @@ final class RequestCacheService: RequestCacheServiceProtocol {
     // MARK: - Notification Handler
     
     @objc private func clearMemoryCache() {
-        print("Received memory warning. Clearing L1 cache.")
+        logger.warning("Received memory warning. Clearing L1 cache.")
         memoryCache.removeAll()
     }
     
@@ -67,21 +86,21 @@ final class RequestCacheService: RequestCacheServiceProtocol {
                 completion(entry.response)
 
             case .failure(let error):
-                print("\(error.localizedDescription).")
+                logger.error("Cache fetch failed: \(error.localizedDescription)")
                 self.diskCache.remove(forKey: query, completion: nil)
                 completion(nil)
             }
         }
     }
-    
+
     func cacheResponse(_ response: CachedIconsResponse, for query: String) {
         let entry = CacheEntry(response: response, timestamp: Date())
-        
+
         memoryCache[query] = entry
-        
-        diskCache.save(entry, forKey: query) { error in
+
+        diskCache.save(entry, forKey: query) { [weak self] error in
             if let error = error {
-                print("Failed to save to L2 cache: \(error.localizedDescription)")
+                self?.logger.error("Failed to save to L2 cache: \(error.localizedDescription)")
             }
         }
     }

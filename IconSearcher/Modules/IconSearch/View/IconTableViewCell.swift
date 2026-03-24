@@ -9,11 +9,12 @@ final class IconTableViewCell: UITableViewCell {
     private let tagsLabel = UILabel()
 
     private var iconURL: URL?
-    private let imageLoader = ServiceAssembly.makeImageLoader()
+    private let imageLoader: ImageLoader?
 
     //MARK: - Initialization
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        self.imageLoader = ServiceAssembly.makeImageLoader()
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupUI()
     }
@@ -72,7 +73,7 @@ final class IconTableViewCell: UITableViewCell {
         self.iconImageView.image = nil
         
         if let url = self.iconURL {
-            imageLoader.loadImage(from: url) { [weak self] image in
+            imageLoader?.loadImage(from: url) { [weak self] image in
                 guard let self = self, self.iconURL == url else {
                     return
                 }
@@ -91,7 +92,7 @@ final class IconTableViewCell: UITableViewCell {
         tagsLabel.text = nil
 
         if let iconURL = self.iconURL {
-            imageLoader.cancelLoad(for: iconURL)
+            imageLoader?.cancelLoad(for: iconURL)
         }
         self.iconURL = nil
     }

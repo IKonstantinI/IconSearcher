@@ -21,13 +21,25 @@ final class IconRepository: IconRepositoryProtocol {
     private let cacheService: RequestCacheServiceProtocol
     
     // MARK: - Initalization
-    
+
     init(
-        networkService: IconServiceProtocol = FreepikService(),
-        cacheService: RequestCacheServiceProtocol = RequestCacheService()
+        networkService: IconServiceProtocol,
+        cacheService: RequestCacheServiceProtocol
     ) {
         self.networkService = networkService
         self.cacheService = cacheService
+    }
+    
+    convenience init() {
+        guard let networkService = FreepikServiceFactory.makeDefault() else {
+            fatalError("Failed to create FreepikService. Check Keys.plist")
+        }
+        
+        let cacheService = RequestCacheService()
+        self.init(
+            networkService: networkService,
+            cacheService: cacheService
+        )
     }
     
     // MARK: - Public Methods

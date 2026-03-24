@@ -4,15 +4,8 @@ enum ServiceAssembly {
     
     // MARK: - ImageLoader
     
-    static func makeImageLoader() -> ImageLoader {
-        do {
-            let diskCache = try ImageCacheService()
-            let cache = ImageCachingService(diskCache: diskCache)
-            let downloader = ImageDownloadManager()
-            return ImageLoader(cache: cache, downloader: downloader)
-        } catch {
-            fatalError("Failed to create ImageLoader: \(error)")
-        }
+    static func makeImageLoader() -> ImageLoader? {
+        return ImageLoader.makeDefault()
     }
     
     static func makeImageLoader(

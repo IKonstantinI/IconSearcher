@@ -1,6 +1,14 @@
 import Foundation
+import os.log
 
 final class ImageCacheService {
+    
+    // MARK: - Logger
+    
+    private let logger = Logger(
+        subsystem: "com.bertoldi.IconSearcher",
+        category: "ImageCache"
+    )
     
     // MARK: - Properties
     
@@ -89,7 +97,7 @@ final class ImageCacheService {
                     }
                 }
             } catch {
-                print("Failed to clear image cache: \(error.localizedDescription)")
+                self.logger.error("Failed to clear image cache: \(error.localizedDescription)")
             }
         }
     }

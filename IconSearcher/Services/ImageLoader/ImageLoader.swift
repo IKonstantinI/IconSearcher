@@ -11,10 +11,8 @@ final class ImageLoader: @unchecked Sendable, ImageLoaderProtocol {
     // MARK: - Initialization
 
     init(
-        cache: ImageCachingServiceProtocol = ImageCachingService(
-            diskCache: try! ImageCacheService()
-        ),
-        downloader: ImageDownloadManagerProtocol = ImageDownloadManager(),
+        cache: ImageCachingServiceProtocol,
+        downloader: ImageDownloadManagerProtocol,
         cacheTTL: TimeInterval = 7 * 24 * 60 * 60
     ) {
         self.cache = cache
@@ -22,6 +20,24 @@ final class ImageLoader: @unchecked Sendable, ImageLoaderProtocol {
         self.cacheTTL = cacheTTL
         
         self.cache.cleanUp(maxAge: cacheTTL)
+    }
+    
+    convenience init() {
+        do {
+            let diskCache = try ImageCacheService()
+            let cache = ImageCachingService(diskCache: diskCache)
+            let downloader = ImageDownloadManager()
+            self.init(cache: cache, downloader: downloader, cacheTTL: 7 * 24 * 60 * 60)
+        } catch {
+            fatalError("Failed to create ImageCacheService: \(error)")
+        }
+    }
+    
+    static func makeDefault() -> ImageLoader? {
+        guard let diskCache = try? ImageCacheService() else { return nil }
+        let cache = ImageCachingService(diskCache: diskCache)
+        let downloader = ImageDownloadManager()
+        return ImageLoader(cache: cache, downloader: downloader)
     }
     
     // MARK: - ImageLoaderProtocol

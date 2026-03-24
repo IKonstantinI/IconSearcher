@@ -1,6 +1,14 @@
 import Foundation
+import os.log
 
 final class DiskCacheService: DiskCacheServiceProtocol {
+    
+    // MARK: - Logger
+    
+    private let logger = Logger(
+        subsystem: "com.bertoldi.IconSearcher",
+        category: "DiskCache"
+    )
     
     // MARK: - Properties
     
@@ -102,7 +110,7 @@ final class DiskCacheService: DiskCacheServiceProtocol {
                     }
                 }
             } catch {
-                print("Failed to clean up disk cache: \(error.localizedDescription)")
+                self.logger.error("Failed to clean up disk cache: \(error.localizedDescription)")
             }
         }
     }

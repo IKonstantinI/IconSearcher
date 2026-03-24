@@ -15,9 +15,9 @@ final class IconSearchViewController: UIViewController, UITableViewDelegate {
     }()
     
     // MARK: - Properties
-
+    
     private var viewModels: [IconViewModel] = []
-    private let imageLoader = ServiceAssembly.makeImageLoader()
+    private let imageLoader = ServiceAssembly.makeImageLoader() ?? ImageLoader.makeDefault()!
 
     var presenter: IconSearchPresenterProtocol?
     
