@@ -1,6 +1,6 @@
 import Foundation
 
-//MARK: - Protocol
+// MARK: - Protocol
 
 protocol IconRepositoryProtocol {
     func searchIcons(
